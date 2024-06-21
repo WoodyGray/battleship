@@ -1,19 +1,12 @@
 package org.woody;
 
 import org.woody.stateMachine.StateMachine;
-import org.woody.states.GameModeSelectionState;
-import org.woody.states.GameOverState;
-import org.woody.states.PrepareGameState;
-import org.woody.states.StartMultiplayerModeState;
+import org.woody.states.*;
+
 /**
  * Hello world!
  *
  */
-public class App 
-{
-    public static void main( String[] args )
-    {
-        System.out.println( "Hello World!" );
 public class App {
     private static StateMachine stateMachine;
 
@@ -28,10 +21,12 @@ public class App {
 
         PrepareGameState prepareGameState = new PrepareGameState(stateMachine);
         GameModeSelectionState gameModeSelectionState = new GameModeSelectionState(stateMachine);
+        AdminState adminState = new AdminState(stateMachine);
         StartMultiplayerModeState startMultiplayerModeState = new StartMultiplayerModeState(stateMachine);
         GameOverState gameOverState = new GameOverState(stateMachine);
 
         stateMachine.addState(prepareGameState);
+        stateMachine.addState(adminState);
         stateMachine.addState(gameModeSelectionState);
         stateMachine.addState(startMultiplayerModeState);
         stateMachine.addState(gameOverState);
