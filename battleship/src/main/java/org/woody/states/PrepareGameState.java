@@ -18,25 +18,37 @@ public class PrepareGameState implements EnterState {
     @Override
     public void enter() {
         ConsoleDisplayManager.printHeader();
-        createUser();
-        setupUser();
-        enterGameModeSelectionState();
+        String userName = getUserName();
+        if (userName.equals("admin")){
+            enterAdminState();
+        }else {
+            createUser();
+            setupUser(userName);
+            enterGameModeSelectionState();
+        }
+    }
+
+    private String getUserName(){
+        return UserInteractionManager.getInputNameFromUser();
     }
 
     private void createUser() {
         HumanPlayerProvider.getInstance();
     }
 
-    private void setupUser() {
+    private void setupUser(String userName) {
         User user = HumanPlayerProvider.getInstance();
 
-        String userName = UserInteractionManager.getInputNameFromUser();
         CompleteBoard leftBoard = new CompleteBoard();
         BasicBoard rightBoard = new BasicBoard();
 
         user.setName(userName);
         user.setLeftBoard(leftBoard);
         user.setRightBoard(rightBoard);
+    }
+
+    private void enterAdminState(){
+        this.stateMachine.changeState(AdminState.class);
     }
 
     private void enterGameModeSelectionState() {

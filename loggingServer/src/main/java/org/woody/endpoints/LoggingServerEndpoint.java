@@ -1,4 +1,4 @@
-package org.woody;
+package org.woody.endpoints;
 
 import jakarta.websocket.OnMessage;
 import jakarta.websocket.OnOpen;
@@ -6,13 +6,12 @@ import jakarta.websocket.Session;
 import jakarta.websocket.server.ServerEndpoint;
 import org.glassfish.tyrus.server.Server;
 
-import java.io.BufferedWriter;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 
 @ServerEndpoint("/log")
 public class LoggingServerEndpoint {
     private BufferedWriter writer;
+
 
     public LoggingServerEndpoint(){
         try {
@@ -29,6 +28,26 @@ public class LoggingServerEndpoint {
 
     @OnMessage
     public void onMessage(String message, Session session){
+        if (message.matches("GET_HISTORY")){
+            handleHistoryCommand(session);
+        }else {
+            handleDefault(session, message);
+        }
+
+    }
+
+    private void handleHistoryCommand(Session session){
+        try (BufferedReader reader = new BufferedReader(new FileReader("logs.txt"))){
+            String line;
+            while ((line = reader.readLine()) != null){
+                session.getBasicRemote().sendText("HISTORY_" + line);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void handleDefault(Session session, String message){
         System.out.printf("Партия сессии %s%n", session.getId());
         try {
             writer.write(message);
@@ -37,7 +56,6 @@ public class LoggingServerEndpoint {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
     }
 
     public static void startServer(int port) {

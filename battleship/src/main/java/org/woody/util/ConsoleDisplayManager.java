@@ -33,6 +33,12 @@ public class ConsoleDisplayManager {
         System.out.println(createGameHeader());
     }
 
+    public static void printAdminMode(){
+        UserInteractionManager.setAdminCommandInterpreter();
+        String message = "Вы вошли в режим администратора, --help для ознакомления";
+        System.out.println(message);
+    }
+
     public static void printGameModeMenu() {
         String message = """
                 Выбери режим игры:

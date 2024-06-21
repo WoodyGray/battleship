@@ -22,6 +22,8 @@ public class UserInteractionManager {
         interpreter = new PortInterpreter();
     }
 
+    public static void setAdminCommandInterpreter() {interpreter = new AdminCommandInterpreter();}
+
     public static String createPositionFromInput() {
         String input;
         while (true) {
@@ -50,6 +52,18 @@ public class UserInteractionManager {
             }
         }
         return isVertical;
+    }
+
+    public static String getAdminCommandFromInput(){
+        while (true) {
+            String input = getInputFromUser();
+            if (isValidAdminCommand(input)){
+                return input;
+            } else {
+                String message= "Неверный формат( Попробуй снова: ";
+                System.out.printf("\n%s%s%s", ConsoleDisplayManager.AnsiColor.YELLOW, message, ConsoleDisplayManager.AnsiColor.RESET);
+            }
+        }
     }
 
     public static String getABSelectionFromInput() {
@@ -84,6 +98,11 @@ public class UserInteractionManager {
 
     private static String getInputFromUser() {
         return scanner.nextLine();
+    }
+
+    private static boolean isValidAdminCommand(String input){
+        InputContext context = new InputContext(input);
+        return interpreter.interpret(context);
     }
 
     private static boolean isValidPosition(String input) {
@@ -129,6 +148,15 @@ class PortInterpreter implements Interpreter {
     public boolean interpret(InputContext context) {
         String input = context.input();
         return input.matches("^(1[5-9]\\d{2}|[2-7]\\d{3}|8000)$");
+    }
+}
+
+class AdminCommandInterpreter implements Interpreter{
+
+    @Override
+    public boolean interpret(InputContext context) {
+        String input = context.input();
+        return input.matches("^--help$|^--history|^--exit$");
     }
 }
 

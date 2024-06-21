@@ -1,5 +1,7 @@
 package org.woody;
 
+import org.woody.endpoints.LoggingServerEndpoint;
+
 /**
  * Hello world!
  *
