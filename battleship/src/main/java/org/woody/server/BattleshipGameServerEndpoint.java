@@ -71,6 +71,13 @@ public class BattleshipGameServerEndpoint {
         playerBattleController.printMatchResult();
         playerBattleController.finishMatch();
         try {
+
+            LoggingClientEndpoint.sendLoggText(playerBattleController.getPlayedGame(LoggingClientEndpoint.getSessionId()));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        try {
             session.close(new CloseReason(CloseReason.CloseCodes.NORMAL_CLOSURE, reason));
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -104,6 +111,12 @@ public class BattleshipGameServerEndpoint {
             GameStatistics.endGameTime();
             playerBattleController.printMatchResult();
             playerBattleController.finishMatch();
+
+            try {
+                LoggingClientEndpoint.sendLoggText(playerBattleController.getPlayedGame(LoggingClientEndpoint.getSessionId()));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
         ConsoleDisplayManager.printSessionClosure(session.getId(), closeReason.getReasonPhrase());
         connectedClients--;
@@ -116,6 +129,7 @@ public class BattleshipGameServerEndpoint {
     }
 
     public static void startServer(int port, BattleController battleController) {
+        LoggingClientEndpoint.startClient();
         Server server;
         BattleshipGameServerEndpoint.setPlayerBattleController(battleController);
         server = new Server("localhost", port, "/websockets", null, BattleshipGameServerEndpoint.class);

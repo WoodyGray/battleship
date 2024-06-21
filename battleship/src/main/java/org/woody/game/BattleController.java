@@ -1,9 +1,13 @@
 package org.woody.game;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.woody.board.cell.Cell;
 import org.woody.board.cell.CellType;
 import org.woody.board.ship.Ship;
 import org.woody.board.ship.ShipType;
+import org.woody.mapper.PlayedGame;
+import org.woody.mapper.Round;
 import org.woody.user.User;
 import org.woody.util.CellConverter;
 import org.woody.util.ConsoleDisplayManager;
@@ -16,10 +20,11 @@ import java.util.List;
 
 public class BattleController {
     private final User user;
-    @Setter
+
     private String opponentName;
     private Cell position;
     private final GameStatistics gameStatistics;
+    private final PlayedGame playedGame;
     private static final long sleepTime = 2000;
     @Getter
     private boolean disableConsoleOutput = false;
@@ -29,6 +34,7 @@ public class BattleController {
     public BattleController(User user) {
         this.user = user;
         this.gameStatistics = new GameStatistics();
+        this.playedGame = new PlayedGame(user.getName());
     }
 
     public String getUserName() {
@@ -61,7 +67,7 @@ public class BattleController {
 
 
     public void waitOpponentTurn() {
-        this.gameStatistics.incrementOpponentTotalShots();
+//        this.gameStatistics.incrementOpponentTotalShots();
         String info = getGameInfo();
         println(info);
         println(ConsoleDisplayManager.getOpponentTurnMessage(this.opponentName));
@@ -73,7 +79,14 @@ public class BattleController {
         println(info);
         println(ConsoleDisplayManager.getPlayerTurnMessage());
         ConsoleDisplayManager.printEmptyRows(3);
-        return executeAttack();
+
+        String position = executeAttack();
+        playedGame.addRound(
+                gameStatistics.getTotalTurns(),
+                this.user.getName(),
+                position
+        );
+        return position;
     }
 
     private String executeAttack() {
@@ -83,6 +96,7 @@ public class BattleController {
     }
 
     public String processAttack(String message) {
+
         Cell cell = this.user.giveResponse(CellConverter.createCellFromInput(message));
 
         if (cell.getCellType() != CellType.MISS) {
@@ -91,6 +105,12 @@ public class BattleController {
                 this.gameStatistics.incrementOpponentTotalShots();
             }
         }
+
+        playedGame.addRound(
+                gameStatistics.getTotalTurns(),
+                this.opponentName,
+                message
+        );
 
         String info = getGameInfo();
         println(info);
@@ -140,8 +160,13 @@ public class BattleController {
             processNonShipMessage(message);
         }
 
-        if (!"MISS".equals(message) && !message.startsWith("ПРОИГРАЛ")) {
+        if (!"ПРОМАХ".equals(message) && !message.startsWith("ПРОИГРАЛ")) {
             this.gameStatistics.incrementPlayerTotalShots();
+            playedGame.addRound(
+                    gameStatistics.getTotalTurns(),
+                    this.opponentName,
+                    message
+            );
         }
 
         String info = getGameInfo();
@@ -241,6 +266,8 @@ public class BattleController {
 
     public void printMatchResult() {
         boolean flag = this.user.hasLost();
+        playedGame.setFirstPlayerHasWin(!flag);
+        playedGame.setGameEndTime(GameStatistics.getGameEndTime());
         if (flag) {
             ConsoleDisplayManager.printMatchResult(true, this.opponentName);
         }
@@ -260,6 +287,23 @@ public class BattleController {
     private void println(String message) {
         if (!this.disableConsoleOutput) {
             System.out.println(message);
+        }
+    }
+
+    public void setOpponentName(String opponentName) {
+        this.opponentName = opponentName;
+        playedGame.setSecondPlayer(opponentName);
+        playedGame.setGameStartTime(GameStatistics.getGameStartTime());
+    }
+
+    public String getPlayedGame(String sessionId) {
+
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            playedGame.setSessionId(sessionId);
+            return mapper.writeValueAsString(playedGame);
+        } catch (JsonProcessingException e) {
+            return "";
         }
     }
 }

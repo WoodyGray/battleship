@@ -81,6 +81,7 @@ public class BattleshipGameClientEndpoint {
 
     private void handleDefaultMessage(Session session) throws IOException {
         String position = playerBattleController.attack();
+
         session.getBasicRemote().sendText(position);
     }
 

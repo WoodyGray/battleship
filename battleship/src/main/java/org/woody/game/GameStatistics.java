@@ -14,6 +14,8 @@ public class GameStatistics {
     private static LocalDateTime gameStartTime;
     private static LocalDateTime gameEndTime;
 
+    private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy hh:mm a");
+
     public int getTotalTurns() {
         return this.playerTotalShots + this.opponentTotalShots;
     }
@@ -44,10 +46,17 @@ public class GameStatistics {
 
     public void getMatchTimes() {
         Duration duration = Duration.between(gameStartTime, gameEndTime);
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy hh:mm a");
         String startTime = gameStartTime.format(formatter);
         String endTime = gameEndTime.format(formatter);
         ConsoleDisplayManager.getMatchTimes(startTime, endTime, duration);
+    }
+
+    public static String getGameStartTime(){
+        return gameStartTime.format(formatter);
+    }
+
+    public static String getGameEndTime(){
+        return gameEndTime.format(formatter);
     }
 
     public long getPlayerHitEfficiency() {
